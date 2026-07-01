@@ -14,7 +14,7 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 
-from src.prompt import build_prompt
+from src.prompt import build_messages
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/receipt-extractor-q4.gguf")
 THREADS = int(os.getenv("LLAMA_THREADS", "4"))
@@ -47,6 +47,7 @@ def _load():
         model_path=path,
         n_ctx=2048,
         n_threads=THREADS,
+        chat_format="chatml",  # Qwen2.5 uses ChatML, matching how it was fine-tuned
         verbose=False,
     )
 
@@ -54,13 +55,11 @@ def _load():
 def extract(receipt_text: str) -> str:
     """Run the model on one receipt and return its raw JSON string."""
     llm = _load()
-    # build_prompt embeds a literal "<s>"; llama.cpp adds BOS itself, so drop ours
-    # to avoid a doubled beginning-of-sequence token.
-    prompt = build_prompt(receipt_text).replace("<s>", "", 1)
-    out = llm.create_completion(
-        prompt=prompt,
+    # create_chat_completion applies the ChatML template, so the served prompt matches
+    # the training prompt built by tokenizer.apply_chat_template in the notebook.
+    out = llm.create_chat_completion(
+        messages=build_messages(receipt_text),
         max_tokens=512,
         temperature=0.0,
-        stop=["</s>"],
     )
-    return out["choices"][0]["text"].strip()
+    return out["choices"][0]["message"]["content"].strip()

@@ -20,7 +20,7 @@ from src.schema import parse_receipt
 logger = logging.getLogger("uvicorn.error")
 _STATIC = Path(__file__).parent / "static"
 
-app = FastAPI(title="Receipt Extractor", description="Fine-tuned Mistral-7B -> structured JSON")
+app = FastAPI(title="Receipt Extractor", description="Fine-tuned Qwen2.5-7B -> structured JSON")
 
 
 class ExtractRequest(BaseModel):

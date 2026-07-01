@@ -9,8 +9,8 @@ the model from a companion model repo at runtime, so the app image stays small.
 Open `notebooks/finetune_qlora.ipynb` in Google Colab, set the runtime to a **T4
 GPU**, and run it top to bottom. It will:
 
-1. Ask you to log in (Mistral-7B-Instruct is gated — accept its license once at
-   https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3, then paste a read token).
+1. Optionally ask you to log in (Qwen2.5-7B-Instruct is openly licensed, so this is
+   only to avoid download rate limits — paste a read token or skip the cell).
 2. Generate the dataset, fine-tune with QLoRA, and print the base-vs-fine-tuned table.
 3. Merge the adapters, quantize to `receipt-extractor-q4.gguf`, and download it.
 

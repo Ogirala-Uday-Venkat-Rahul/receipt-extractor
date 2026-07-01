@@ -10,7 +10,7 @@ pinned: false
 
 # Receipt Extractor — a fine-tuned LLM for structured extraction
 
-Messy receipt text in, clean structured JSON out. A **Mistral-7B** model
+Messy receipt text in, clean structured JSON out. A **Qwen2.5-7B** model
 fine-tuned with **QLoRA** to pull the vendor, date, total, and line items out of
 noisy, real-world receipt formatting — and an evaluation that shows how much the
 fine-tune actually helps versus the base model.
@@ -44,10 +44,10 @@ guesses; the fine-tune learns the house rules.
 ## Results
 
 Both models are scored on a held-out test set with identical metrics. The base
-model is the same 4-bit Mistral-7B with the LoRA adapters switched off, so the
+model is the same 4-bit Qwen2.5-7B with the LoRA adapters switched off, so the
 comparison is apples-to-apples.
 
-| Metric | Base Mistral-7B | Fine-tuned |
+| Metric | Base Qwen2.5-7B | Fine-tuned |
 |---|---|---|
 | JSON valid | _run notebook cell 9_ | _run notebook cell 9_ |
 | Exact match | | |

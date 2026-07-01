@@ -1,13 +1,21 @@
-"""The one prompt format used everywhere.
+"""The one conversation definition used everywhere.
 
-Fine-tuning only works if the model sees the same instruction at inference that
-it saw during training. Training, evaluation, and the serving API all build the
-prompt through these functions so the three can never drift apart.
+Fine-tuning only works if the model sees the same prompt at inference that it saw
+during training. Rather than hand-roll a format string, we define the conversation
+as messages and let Qwen's official chat template render it — the training notebook
+applies it via `tokenizer.apply_chat_template`, and the serving app applies the same
+template through llama.cpp's chat completion. Both sides derive from this one place,
+so they cannot drift.
 
-Mistral-7B-Instruct expects the `[INST] ... [/INST]` chat format. We keep the
-instruction terse and put all the schema rules in it, because those rules are
-exactly what the fine-tune is teaching the model to internalise.
+Qwen2.5-Instruct uses the ChatML format (`<|im_start|>role ... <|im_end|>`); the
+schema rules live in the instruction because that is exactly what the fine-tune is
+teaching the model to internalise.
 """
+
+SYSTEM = (
+    "You are a precise information-extraction engine. "
+    "You convert receipt text into structured JSON and output nothing else."
+)
 
 INSTRUCTION = (
     "Extract the receipt below into JSON with these keys: "
@@ -17,11 +25,9 @@ INSTRUCTION = (
 )
 
 
-def build_prompt(receipt_text: str) -> str:
-    """The full `[INST]...[/INST]` string fed to the model (no answer)."""
-    return f"<s>[INST] {INSTRUCTION}\n\n{receipt_text.strip()} [/INST]"
-
-
-def build_training_example(receipt_text: str, target_json: str) -> str:
-    """Prompt + gold answer + EOS — one row of the supervised fine-tuning set."""
-    return f"{build_prompt(receipt_text)} {target_json}</s>"
+def build_messages(receipt_text: str) -> list[dict]:
+    """The chat conversation for one receipt (no answer) — the single source of truth."""
+    return [
+        {"role": "system", "content": SYSTEM},
+        {"role": "user", "content": f"{INSTRUCTION}\n\n{receipt_text.strip()}"},
+    ]

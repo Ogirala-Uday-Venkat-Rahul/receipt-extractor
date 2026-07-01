@@ -22,7 +22,7 @@ is slow).
 
 ## What this is, in one sentence
 
-A Mistral-7B model fine-tuned with QLoRA to turn messy receipt text into clean,
+A Qwen2.5-7B model fine-tuned with QLoRA to turn messy receipt text into clean,
 schema-valid JSON — with an evaluation that proves the fine-tune beats the base model.
 
 ## The 60-second pitch
@@ -30,7 +30,7 @@ schema-valid JSON — with an evaluation that proves the fine-tune beats the bas
 > This is the case where fine-tuning a small private model beats calling a frontier
 > API: high-volume document processing where cost and privacy matter. I built a
 > synthetic dataset by generating structured records and rendering them into noisy
-> receipts, so every label is correct by construction. I fine-tuned Mistral-7B with
+> receipts, so every label is correct by construction. I fine-tuned Qwen2.5-7B with
 > QLoRA on a free Colab T4, then measured it against the untuned base on a held-out
 > set — JSON validity, field accuracy, and line-item F1. The fine-tune's job is to
 > learn the conventions the base model can only guess at: date normalisation, which

@@ -1,0 +1,14 @@
+# Dataset generation + serving (runs on CPU, incl. the free HF Space).
+pydantic>=2.6
+fastapi>=0.110
+uvicorn[standard]>=0.29
+llama-cpp-python>=0.2.72
+huggingface_hub>=0.23
+
+# Evaluation harness.
+tqdm>=4.66
+
+# Note: training dependencies (torch, transformers, peft, bitsandbytes, trl,
+# datasets) are NOT listed here — training runs on Colab/Kaggle where those are
+# preinstalled or installed in the notebook. Keeping them out of this file keeps
+# the serving image small and CPU-only.

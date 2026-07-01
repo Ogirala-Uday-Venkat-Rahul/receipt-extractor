@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Environment
+.env
+
+# Generated dataset (reproducible from src/generate_dataset.py)
+data/*.jsonl
+
+# Model weights and adapters (large; produced by training)
+*.gguf
+*.safetensors
+adapters/
+merged/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -31,7 +31,7 @@ schema-valid JSON — with an evaluation that proves the fine-tune beats the bas
 > API: high-volume document processing where cost and privacy matter. I built a
 > synthetic dataset by generating structured records and rendering them into noisy
 > receipts, so every label is correct by construction. I fine-tuned Qwen2.5-7B with
-> QLoRA on a free Colab T4, then measured it against the untuned base on a held-out
+> QLoRA on a free T4 GPU, then measured it against the untuned base on a held-out
 > set — JSON validity, field accuracy, and line-item F1. The fine-tune's job is to
 > learn the conventions the base model can only guess at: date normalisation, which
 > line is the total, and which lines to ignore.
@@ -57,9 +57,10 @@ single clearest "why fine-tune" moment: a base model can't know your convention.
 
 ### Show 3 — the numbers
 
-Pull up the README results table (or the notebook's eval cell). The base-vs-fine-tuned
-gap in JSON-validity and field accuracy is the actual deliverable — the model size is
-not the point, the measured improvement is.
+Scroll down on the demo page — the base-vs-fine-tuned results table is right there
+under the extractor (also in the README and the notebook's eval cell). The gap in
+JSON-validity and line-item F1 is the actual deliverable — the model size is not the
+point, the measured improvement is.
 
 ## Honest caveats to have ready
 

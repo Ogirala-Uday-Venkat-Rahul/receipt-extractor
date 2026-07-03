@@ -2,8 +2,9 @@
 pydantic>=2.6
 fastapi>=0.110
 uvicorn[standard]>=0.29
-llama-cpp-python>=0.2.72
 huggingface_hub>=0.23
+# llama-cpp-python is installed in the Dockerfile from the prebuilt CPU wheel
+# index (no source build) — see Dockerfile.
 
 # Evaluation harness.
 tqdm>=4.66

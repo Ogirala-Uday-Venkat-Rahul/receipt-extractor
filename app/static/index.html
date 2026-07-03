@@ -3,60 +3,219 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Receipt Extractor</title>
+  <title>Receipt Extractor — fine-tuned LLM for structured extraction</title>
   <style>
-    :root { --bg:#0f1116; --panel:#171a21; --line:#272b35; --ink:#e6e8ee; --mut:#9aa3b2; --acc:#5b8cff; --ok:#3fb950; --bad:#f85149; }
+    :root {
+      --bg:#0d0f14; --panel:#161922; --panel2:#1c2029; --line:#272b35;
+      --ink:#e8eaf0; --mut:#98a1b3; --dim:#6b7385;
+      --acc:#5b8cff; --acc2:#7aa2ff; --ok:#3fb950; --bad:#f85149; --amber:#e3b341;
+    }
     * { box-sizing: border-box; }
-    body { margin:0; font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-           background:var(--bg); color:var(--ink); }
-    .wrap { max-width:900px; margin:0 auto; padding:32px 20px 64px; }
-    h1 { font-size:22px; margin:0 0 4px; }
-    p.sub { color:var(--mut); margin:0 0 24px; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; font:15px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+           background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
+    a { color:var(--acc2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .wrap { max-width:1000px; margin:0 auto; padding:0 20px; }
+
+    /* hero */
+    header { padding:56px 0 8px; }
+    .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; letter-spacing:.06em;
+               text-transform:uppercase; color:var(--dim); border:1px solid var(--line);
+               background:var(--panel); border-radius:999px; padding:5px 12px; }
+    h1 { font-size:38px; line-height:1.15; margin:18px 0 12px; letter-spacing:-.02em; }
+    h1 .g { background:linear-gradient(90deg,#7aa2ff,#b18cff); -webkit-background-clip:text;
+            background-clip:text; color:transparent; }
+    .lede { font-size:18px; color:var(--mut); max-width:640px; margin:0 0 20px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .pill { font-size:12.5px; color:var(--mut); border:1px solid var(--line); background:var(--panel);
+            border-radius:999px; padding:5px 11px; }
+    .pill.link:hover { border-color:var(--acc); color:var(--ink); }
+
+    section { padding:44px 0; border-top:1px solid var(--line); }
+    section:first-of-type { border-top:0; }
+    h2 { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim);
+         margin:0 0 20px; font-weight:600; }
+
+    /* demo */
     .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media (max-width:760px){ .grid{ grid-template-columns:1fr; } }
-    label { font-size:13px; color:var(--mut); display:block; margin:0 0 6px; }
-    textarea { width:100%; height:340px; resize:vertical; background:var(--panel); color:var(--ink);
-               border:1px solid var(--line); border-radius:10px; padding:12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; }
-    .out { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px;
-           height:340px; overflow:auto; white-space:pre-wrap; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; }
-    .row { display:flex; align-items:center; gap:12px; margin:16px 0; flex-wrap:wrap; }
-    button { background:var(--acc); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:14px; cursor:pointer; }
+    @media (max-width:780px){ .grid{ grid-template-columns:1fr; } h1{ font-size:30px; } }
+    label { font-size:13px; color:var(--mut); display:flex; align-items:center; gap:8px; margin:0 0 8px; }
+    textarea { width:100%; height:320px; resize:vertical; background:var(--panel); color:var(--ink);
+               border:1px solid var(--line); border-radius:12px; padding:14px;
+               font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.55; }
+    textarea:focus { outline:none; border-color:var(--acc); }
+    .out { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px;
+           height:320px; overflow:auto; white-space:pre-wrap;
+           font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.55; }
+    .out.muted { color:var(--dim); }
+    .row { display:flex; align-items:center; gap:12px; margin:18px 0 0; flex-wrap:wrap; }
+    button { background:var(--acc); color:#fff; border:0; border-radius:10px; padding:11px 22px;
+             font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; }
+    button:hover { background:var(--acc2); }
     button:disabled { opacity:.5; cursor:default; }
+    .samples { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0 0 14px; }
     .chip { background:var(--panel); border:1px solid var(--line); color:var(--mut); border-radius:999px;
-            padding:6px 12px; font-size:12px; cursor:pointer; }
+            padding:6px 13px; font-size:12.5px; cursor:pointer; transition:.15s; }
     .chip:hover { color:var(--ink); border-color:var(--acc); }
-    .badge { font-size:12px; padding:3px 10px; border-radius:999px; font-weight:600; }
+    .badge { font-size:11.5px; padding:3px 10px; border-radius:999px; font-weight:600; }
     .badge.ok { background:rgba(63,185,80,.15); color:var(--ok); }
     .badge.bad { background:rgba(248,81,73,.15); color:var(--bad); }
     .muted { color:var(--mut); font-size:13px; }
+    .note { font-size:12.5px; color:var(--dim); margin:14px 0 0; }
+
+    /* table */
+    .tablewrap { overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
+    table { width:100%; border-collapse:collapse; font-size:14px; min-width:460px; }
+    th, td { text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); }
+    thead th { color:var(--dim); font-weight:600; font-size:12.5px; letter-spacing:.03em; }
+    tbody tr:last-child td { border-bottom:0; }
+    td.metric { color:var(--mut); }
+    td.base { color:var(--mut); font-variant-numeric:tabular-nums; }
+    td.ft { color:var(--ok); font-weight:600; font-variant-numeric:tabular-nums; }
+    tr.hi td.metric { color:var(--ink); font-weight:600; }
+    tr.hi { background:rgba(91,140,255,.06); }
+    .caption { font-size:13px; color:var(--mut); margin:14px 0 0; max-width:720px; }
+
+    /* cards */
+    .cards { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:780px){ .cards{ grid-template-columns:1fr; } }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; }
+    .card h3 { margin:0 0 8px; font-size:15px; }
+    .card p { margin:0; color:var(--mut); font-size:14px; }
+    .flow { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; color:var(--mut);
+            line-height:1.9; white-space:pre-wrap; }
+    .flow b { color:var(--ink); font-weight:600; }
+
+    footer { padding:36px 0 64px; border-top:1px solid var(--line); color:var(--dim); font-size:13px; }
+    footer a { color:var(--mut); }
+    .disc { max-width:720px; }
+    .disc li { margin:6px 0; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Receipt Extractor</h1>
-    <p class="sub">Fine-tuned Qwen2.5-7B turns messy receipt text into structured JSON.</p>
 
-    <div class="row">
-      <span class="muted">Try a sample:</span>
-      <span class="chip" data-sample="cafe">Cafe receipt</span>
-      <span class="chip" data-sample="hardware">Hardware store</span>
-    </div>
-
-    <div class="grid">
-      <div>
-        <label for="in">Receipt text</label>
-        <textarea id="in" placeholder="Paste a receipt here..."></textarea>
+    <header>
+      <span class="eyebrow">🧾 Fine-tuned · Qwen2.5-7B · QLoRA</span>
+      <h1>Messy receipts in,<br><span class="g">structured JSON</span> out.</h1>
+      <p class="lede">A 7-billion-parameter model fine-tuned to pull the vendor, date, total,
+        and line items out of noisy real-world receipt text — with an evaluation that measures
+        exactly how much the fine-tune beats the base model.</p>
+      <div class="meta">
+        <span class="pill">4-bit QLoRA</span>
+        <span class="pill">Q4_K_M · CPU-served</span>
+        <span class="pill">labelled-by-construction data</span>
+        <a class="pill link" href="https://github.com/Ogirala-Uday-Venkat-Rahul/receipt-extractor" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
-      <div>
-        <label>Extracted JSON <span id="badge"></span></label>
-        <div id="out" class="out muted">Output will appear here.</div>
-      </div>
-    </div>
+    </header>
 
-    <div class="row">
-      <button id="go">Extract</button>
-      <span id="status" class="muted"></span>
-    </div>
+    <section>
+      <h2>Try it live</h2>
+      <div class="samples">
+        <span class="muted">Load a sample:</span>
+        <span class="chip" data-sample="cafe">Cafe receipt</span>
+        <span class="chip" data-sample="hardware">Hardware store</span>
+        <span class="chip" data-sample="grocery">Grocery</span>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="in">Receipt text</label>
+          <textarea id="in" placeholder="Paste a receipt here, or load a sample above..."></textarea>
+        </div>
+        <div>
+          <label>Extracted JSON <span id="badge"></span></label>
+          <div id="out" class="out muted">Output will appear here.</div>
+        </div>
+      </div>
+      <div class="row">
+        <button id="go">Extract</button>
+        <span id="status" class="muted"></span>
+      </div>
+      <p class="note">The model is served on CPU from a quantized GGUF. The <em>first</em> request
+        after the Space wakes up can take a minute while the weights download and load; requests after
+        that are a few seconds. <kbd>Ctrl/⌘ + Enter</kbd> also runs it.</p>
+    </section>
+
+    <section>
+      <h2>Does the fine-tune actually help?</h2>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Base Qwen2.5-7B</th><th>Fine-tuned</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="metric">JSON valid</td><td class="base">92.0%</td><td class="ft">100.0%</td></tr>
+            <tr><td class="metric">Exact match</td><td class="base">8.0%</td><td class="ft">100.0%</td></tr>
+            <tr><td class="metric">Vendor accuracy</td><td class="base">100.0%</td><td class="ft">100.0%</td></tr>
+            <tr><td class="metric">Date accuracy</td><td class="base">95.7%</td><td class="ft">100.0%</td></tr>
+            <tr><td class="metric">Total accuracy</td><td class="base">100.0%</td><td class="ft">100.0%</td></tr>
+            <tr class="hi"><td class="metric">Line-item F1</td><td class="base">37.2%</td><td class="ft">100.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">Both models are scored on the same 50 held-out receipts. The "base" is the
+        identical 4-bit model with the LoRA adapters switched off, so it's apples-to-apples. The base
+        already reads vendor and total fine — but it can't know the receipt's <em>line-item convention</em>
+        (quantity × unit-price vs. line totals), so its line-item F1 sits at 37% and it gets a fully
+        correct record only 8% of the time. That gap is what fine-tuning buys.</p>
+    </section>
+
+    <section>
+      <h2>Why fine-tune instead of calling an API?</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>The business case</h3>
+          <p>High-volume document processing where cost and privacy matter. A company scanning
+            thousands of receipts a day doesn't want to pay a frontier API per call or ship its
+            data off-site — it wants a small model it owns that has learned one job well.</p>
+        </div>
+        <div class="card">
+          <h3>The learnable rules</h3>
+          <p>Dates written five different ways that must normalise to <code>YYYY-MM-DD</code>, a
+            total hiding behind "AMOUNT DUE" or "BALANCE", distractor lines that must be ignored,
+            and a price convention the model can only pick up from examples. A base model guesses;
+            the fine-tune learns the house rules.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>How it's built</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Pipeline</h3>
+          <div class="flow"><b>synthetic data</b> — build a structured record, then render it down
+into noisy receipt text, so the ground-truth JSON is correct <b>by construction</b>
+        ↓
+<b>QLoRA fine-tune</b> — 7B base kept in 4-bit, low-rank adapters
+trained on a free T4 GPU
+        ↓
+<b>evaluate</b> base vs. fine-tuned — validity, per-field
+accuracy, line-item F1
+        ↓
+<b>merge + quantize → GGUF (Q4_K_M)</b>
+        ↓
+<b>serve on CPU</b> — FastAPI, downloads the model from the Hub</div>
+        </div>
+        <div class="card">
+          <h3>Honest caveats</h3>
+          <ul class="disc" style="margin:0; padding-left:18px;">
+            <li>The dataset is <b>synthetic</b> — it models the kinds of noise real receipts have,
+              not scanned OCR. The methodology transfers directly to a real annotated set.</li>
+            <li><b>CPU serving is slower</b> than a GPU API — a few seconds per receipt. The
+              architecture doesn't change with better hardware; the latency does.</li>
+            <li>The point is the <b>measured gap over the base model</b>, not that it's a 7B.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built by Rahul Ogirala · <a href="https://github.com/Ogirala-Uday-Venkat-Rahul/receipt-extractor" target="_blank" rel="noopener">source on GitHub</a>
+      · fine-tuned Qwen2.5-7B-Instruct, served as a Q4_K_M GGUF.
+    </footer>
+
   </div>
 
   <script>
@@ -83,7 +242,19 @@ Cashier: Jordan
 Light Bulb 60W    3 @ $3.15
 1 x USB-C Cable       $12.00
 ------------------------
-BALANCE DUE         $21.45`
+BALANCE DUE         $21.45`,
+      grocery: `GREENLEAF MARKET
+Store #14  ·  12/23/24
+============================
+Bananas    2.1 lb @ $0.59   $1.24
+Whole Milk 1gal      x2     $7.98
+Eggs Large Dozen            $4.49
+Sourdough                   $5.00
+----------------------------
+SUBTOTAL                   $18.71
+SALES TAX                   $1.31
+TOTAL                      $20.02
+Points earned: 20`
     };
 
     const $ = (id) => document.getElementById(id);
@@ -94,10 +265,10 @@ BALANCE DUE         $21.45`
       const text = $('in').value.trim();
       if (!text) return;
       $('go').disabled = true;
-      $('status').textContent = 'Extracting...';
+      $('status').textContent = 'Extracting…';
       $('badge').innerHTML = '';
       $('out').className = 'out muted';
-      $('out').textContent = 'Working...';
+      $('out').textContent = 'Working… (first request can take a minute on a cold Space)';
       try {
         const res = await fetch('/extract', {
           method: 'POST',

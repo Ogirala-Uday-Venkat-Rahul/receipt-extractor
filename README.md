@@ -15,6 +15,10 @@ fine-tuned with **QLoRA** to pull the vendor, date, total, and line items out of
 noisy, real-world receipt formatting — and an evaluation that shows how much the
 fine-tune actually helps versus the base model.
 
+**Live demo:** https://huggingface.co/spaces/ouvrahul/receipt-extractor — paste a
+receipt and watch it come back as JSON. (First request after the Space wakes is
+slow while it loads the model; after that it answers in a few seconds.)
+
 ```
 CAFE VERONA                                  {
 220 Hill St                                    "vendor": "Cafe Verona",

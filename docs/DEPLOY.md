@@ -6,25 +6,31 @@ the model from a companion model repo at runtime, so the app image stays small.
 
 ## 1. Train and export the model
 
-Open `notebooks/finetune_qlora.ipynb` in Google Colab, set the runtime to a **T4
-GPU**, and run it top to bottom. It will:
+Open `notebooks/finetune_qlora.ipynb` on a free **T4 GPU** — Google Colab or Kaggle
+both work (Kaggle is easier to get a GPU on, and its "Save & Run All" survives
+disconnects). Run it top to bottom. It will:
 
-1. Optionally ask you to log in (Qwen2.5-7B-Instruct is openly licensed, so this is
-   only to avoid download rate limits — paste a read token or skip the cell).
-2. Generate the dataset, fine-tune with QLoRA, and print the base-vs-fine-tuned table.
-3. Merge the adapters, quantize to `receipt-extractor-q4.gguf`, and download it.
+1. Fine-tune with QLoRA and print the base-vs-fine-tuned table. Qwen2.5-7B-Instruct
+   is openly licensed, so no login is needed.
+2. Merge the adapters, quantize to `receipt-extractor-q4.gguf`.
 
 Copy the eval numbers into the README results table while you have them.
 
-## 2. Publish the model + deploy the app
+The GGUF is ~4.7 GB, so the cleanest move is to **push it to the Hub straight from
+the training environment** rather than pulling it down and re-uploading — a big
+local download is exactly the step most likely to fail. Either way, the weights end
+up in a **model** repo (e.g. `<user>/receipt-extractor-gguf`) as the source of truth.
 
-The helper does both in one shot. In `.env`:
+## 2. Deploy the app
+
+Config lives in `.env` (which is git-ignored — the write token never gets
+committed):
 
 ```
-HF_TOKEN=hf_...            # write token
+HF_TOKEN=hf_...            # write token, used only at deploy time
 MODEL_REPO=<user>/receipt-extractor-gguf
 MODEL_FILE=receipt-extractor-q4.gguf
-LOCAL_GGUF=receipt-extractor-q4.gguf   # path to the file you downloaded
+# LOCAL_GGUF=path/to.gguf  # ONLY if the weights aren't on the Hub yet
 ```
 
 Then:
@@ -33,9 +39,15 @@ Then:
 python deploy_hf.py receipt-extractor
 ```
 
-It uploads the GGUF to the model repo, creates/updates the Docker Space, uploads the
-app, and sets `MODEL_REPO`/`MODEL_FILE` as Space variables so the app knows where to
-pull the weights.
+The helper creates/updates the Docker Space, uploads the app, and sets
+`MODEL_REPO`/`MODEL_FILE` as Space variables so the app knows where to pull the
+weights. **The GGUF upload is optional and self-skipping:** it only runs if
+`LOCAL_GGUF` is set *and* the file exists on disk. If the weights are already on the
+Hub (the recommended path above), leave `LOCAL_GGUF` unset and the helper goes
+straight to deploying the app — the token is never used to store the model twice.
+
+Rotate the write token afterward if it was ever pasted somewhere visible; it isn't
+stored in the Space (only the plain `MODEL_REPO`/`MODEL_FILE` variables are).
 
 ## 3. Doing it by hand (if you skip the helper)
 

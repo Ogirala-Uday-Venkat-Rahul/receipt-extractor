@@ -5,7 +5,7 @@ show off the parts that matter.
 
 ## Links
 
-- **Frontend (present this):** the React SPA on Vercel — set the URL after `vercel --prod`
+- **Frontend (present this):** https://receipt-extractor-ten.vercel.app
 - **Model API:** https://ouvrahul-receipt-extractor.hf.space
 - **Health check:** https://ouvrahul-receipt-extractor.hf.space/health
 - **Source:** https://github.com/Ogirala-Uday-Venkat-Rahul/receipt-extractor

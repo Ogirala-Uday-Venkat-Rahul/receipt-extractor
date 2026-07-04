@@ -15,11 +15,13 @@ fine-tuned with **QLoRA** to pull the vendor, date, total, and line items out of
 noisy, real-world receipt formatting — and an evaluation that shows how much the
 fine-tune actually helps versus the base model.
 
-**Live demo:** https://huggingface.co/spaces/ouvrahul/receipt-extractor — paste a
-receipt, get structured JSON back, and watch it roll up into a small spend
-dashboard (the point isn't the JSON; it's what you do with it). Live extraction
-runs a 7B model on a free CPU Space, so it takes ~2–3 minutes — a hosting choice,
-not a model limit; the dashboard is precomputed so you can explore instantly.
+**Live demo:** https://receipt-extractor-ten.vercel.app — paste a receipt, get
+structured JSON back, and watch it roll up into a small spend dashboard (the
+point isn't the JSON; it's what you do with it). The frontend is a React app on
+Vercel that calls the fine-tuned 7B model, served as a plain API on a free CPU
+Hugging Face Space (https://ouvrahul-receipt-extractor.hf.space). A live
+extraction takes ~2–3 minutes on CPU — a hosting choice, not a model limit; the
+dashboard is precomputed so you can explore instantly.
 
 ```
 CAFE VERONA                                  {

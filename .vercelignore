@@ -1,0 +1,10 @@
+# Vercel only hosts the frontend (web/). The FastAPI service lives on Hugging
+# Face, so hide its files here — otherwise Vercel autodetects a Python backend
+# and tries to build that instead of the Vite app.
+app/
+api/
+requirements.txt
+Dockerfile
+*.py
+pyproject.toml
+data/

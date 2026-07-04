@@ -16,8 +16,10 @@ noisy, real-world receipt formatting — and an evaluation that shows how much t
 fine-tune actually helps versus the base model.
 
 **Live demo:** https://huggingface.co/spaces/ouvrahul/receipt-extractor — paste a
-receipt and watch it come back as JSON. (First request after the Space wakes is
-slow while it loads the model; after that it answers in a few seconds.)
+receipt, get structured JSON back, and watch it roll up into a small spend
+dashboard (the point isn't the JSON; it's what you do with it). Live extraction
+runs a 7B model on a free CPU Space, so it takes ~2–3 minutes — a hosting choice,
+not a model limit; the dashboard is precomputed so you can explore instantly.
 
 ```
 CAFE VERONA                                  {
@@ -108,8 +110,13 @@ is what lets the demo live on a free Hugging Face Space.
 - **The dataset is synthetic.** It models the *kinds* of noise real receipts have
   (format variation, distractor lines, ambiguous conventions) but isn't scanned
   OCR. The methodology — labelled-by-construction, held-out eval — transfers
-  directly to a real annotated set.
-- **CPU serving is slower than a GPU API.** A few seconds per receipt on a free
-  Space. The architecture doesn't change with better hardware; the latency does.
+  directly to a real annotated set. It also shows up in the model's behaviour:
+  probing it with out-of-distribution receipts, vendor/date/total stay correct,
+  but it sometimes *over-applies* the quantity × unit-price convention it learned
+  (e.g. inventing a quantity when a line has none), because the training receipts
+  always had clean quantity columns. That's the synthetic-data gap made concrete.
+- **CPU serving is slow.** ~2–3 minutes per receipt: a 7B model on a free,
+  GPU-less Space. The architecture doesn't change with better hardware; the
+  latency does. On a GPU it's seconds.
 - **"Fine-tuned" is the point, not the model size.** The result that matters is the
   measured gap over the base model, not that it's a 7B.

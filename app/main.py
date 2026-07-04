@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -21,6 +22,16 @@ logger = logging.getLogger("uvicorn.error")
 _STATIC = Path(__file__).parent / "static"
 
 app = FastAPI(title="Receipt Extractor", description="Fine-tuned Qwen2.5-7B -> structured JSON")
+
+# The standalone frontend is served from a different origin (Vercel), so the
+# browser needs CORS headers to call /extract. This is a public, read-only demo
+# API with no cookies or auth, so any origin may call it.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 
 class ExtractRequest(BaseModel):

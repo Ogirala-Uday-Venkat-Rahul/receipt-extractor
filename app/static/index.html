@@ -91,6 +91,32 @@
     footer a { color:var(--mut); }
     .disc { max-width:720px; }
     .disc li { margin:6px 0; }
+
+    /* dashboard */
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:0 0 16px; }
+    @media (max-width:780px){ .kpis{ grid-template-columns:1fr 1fr; } }
+    .kpi { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px; }
+    .kpi-v { font-size:26px; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+    .kpi-l { font-size:12px; color:var(--dim); margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:780px){ .charts{ grid-template-columns:1fr; } }
+    .chartcard { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; }
+    .chartcard h3 { margin:0 0 16px; font-size:13px; color:var(--mut); font-weight:600;
+                    text-transform:uppercase; letter-spacing:.04em; }
+    /* horizontal bars (spend by vendor) — one hue, rounded ends, direct labels */
+    .brow { display:grid; grid-template-columns:92px 1fr 60px; align-items:center; gap:12px; margin:0 0 11px; }
+    .brow:last-child { margin-bottom:0; }
+    .blabel { font-size:12.5px; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .btrack { height:14px; background:var(--panel2); border-radius:999px; overflow:hidden; }
+    .bfill { height:100%; background:var(--acc); border-radius:999px; min-width:3px; transition:width .5s ease; }
+    .bval { font-size:12.5px; color:var(--ink); text-align:right; font-variant-numeric:tabular-nums; }
+    /* line/area (spend over time) — single series, 2px line, ringed markers */
+    .svgline .area { fill:rgba(91,140,255,.14); }
+    .svgline .line { fill:none; stroke:var(--acc); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+    .svgline .dot { fill:var(--acc2); stroke:var(--panel); stroke-width:2; }
+    .svgline text { fill:var(--dim); font-size:11px; font-family:inherit; }
+    #dashboard.flash { animation:flash 1.3s ease; }
+    @keyframes flash { 0%{ box-shadow:0 0 0 3px rgba(91,140,255,.35); } 100%{ box-shadow:0 0 0 3px rgba(91,140,255,0); } }
   </style>
 </head>
 <body>
@@ -132,9 +158,29 @@
         <button id="go">Extract</button>
         <span id="status" class="muted"></span>
       </div>
-      <p class="note">The model is served on CPU from a quantized GGUF. The <em>first</em> request
-        after the Space wakes up can take a minute while the weights download and load; requests after
-        that are a few seconds. <kbd>Ctrl/⌘ + Enter</kbd> also runs it.</p>
+      <p class="note">Heads up: this is a 7B model served on a <b>free CPU</b> Space, so a live extraction
+        takes <b>~2–3 minutes</b> — a hosting choice, not a model limit (on a GPU it's seconds). That's why the
+        dashboard below is precomputed; a live run here appends to it. <kbd>Ctrl/⌘ + Enter</kbd> also runs it.</p>
+    </section>
+
+    <section id="dashboard">
+      <h2>The point isn't JSON — it's the decision on top of it</h2>
+      <p class="caption" style="margin:0 0 22px;">Extraction is the <em>ingestion</em> step, not the product. A BI tool can
+        chart a clean table — but it can't read a crumpled receipt, and that's the hard part the fine-tuned model does.
+        Here the model's structured output is rolled up into a live spend view. It's pre-loaded with receipts the model
+        already processed; <b>extract one above and it lands here too.</b></p>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-v" id="k-total">—</div><div class="kpi-l">Total spend</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-count">—</div><div class="kpi-l">Receipts</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-avg">—</div><div class="kpi-l">Avg receipt</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-items">—</div><div class="kpi-l">Line items</div></div>
+      </div>
+      <div class="charts">
+        <div class="chartcard"><h3>Spend by vendor</h3><div id="chart-vendor" class="svgbar"></div></div>
+        <div class="chartcard"><h3>Spend over time</h3><div id="chart-time"></div></div>
+      </div>
+      <p class="note">Deliberately a small view — the engineering that matters is <em>upstream</em>, turning messy text
+        into this clean data. In production you'd pipe the same JSON into your warehouse or BI tool of choice.</p>
     </section>
 
     <section>
@@ -261,6 +307,70 @@ Points earned: 20`
     document.querySelectorAll('.chip').forEach(c =>
       c.addEventListener('click', () => { $('in').value = SAMPLES[c.dataset.sample]; }));
 
+    // ---- Spend dashboard (client-side): the downstream payoff of extraction ----
+    // Seeded with receipts the model has actually extracted, so the view is instant.
+    // A live extraction above appends to `receipts` and re-renders.
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const receipts = [
+      { vendor:'Corner Cafe',   date:'2024-12-03', total:16.17, line_items:[1,1,1] },
+      { vendor:'QuickMart',     date:'2024-08-14', total:19.72, line_items:[1,1,1] },
+      { vendor:'Corner Store',  date:'2024-11-09', total:6.75,  line_items:[1,1,1] },
+      { vendor:'Burger Barn',   date:'2025-01-02', total:24.50, line_items:[1,1,1] },
+      { vendor:'Dollar Grocer', date:'2025-03-15', total:8.49,  line_items:[1,1,1] },
+      { vendor:'The Bistro',    date:'2025-05-03', total:46.96, line_items:[1,1] }
+    ];
+    const money = (n) => '$' + n.toFixed(2);
+
+    function render() {
+      const rs = receipts.filter(r => typeof r.total === 'number' && !isNaN(r.total));
+      const total = rs.reduce((s,r) => s + r.total, 0);
+      const items = rs.reduce((s,r) => s + ((r.line_items && r.line_items.length) || 0), 0);
+      $('k-total').textContent = money(total);
+      $('k-count').textContent = rs.length;
+      $('k-avg').textContent   = rs.length ? money(total / rs.length) : '$0.00';
+      $('k-items').textContent = items;
+
+      // spend by vendor — magnitude across identities → one-hue horizontal bars
+      const byV = {};
+      rs.forEach(r => { const k = r.vendor || 'Unknown'; byV[k] = (byV[k] || 0) + r.total; });
+      const vendors = Object.entries(byV).sort((a,b) => b[1] - a[1]).slice(0, 8);
+      const vmax = Math.max(...vendors.map(v => v[1]), 1);
+      $('chart-vendor').innerHTML = vendors.map(([name,val]) => `
+        <div class="brow">
+          <div class="blabel" title="${name}">${name}</div>
+          <div class="btrack"><div class="bfill" style="width:${(val/vmax*100).toFixed(1)}%"></div></div>
+          <div class="bval">${money(val)}</div>
+        </div>`).join('');
+
+      // spend over time — trend → single-series line+area, aggregated by month
+      const byM = {};
+      rs.forEach(r => { const m = (r.date || '').slice(0,7);
+        if (/^\d{4}-\d{2}$/.test(m)) byM[m] = (byM[m] || 0) + r.total; });
+      const months = Object.keys(byM).sort().map(m => ({ label: MONTHS[+m.slice(5,7) - 1], value: byM[m] }));
+      $('chart-time').innerHTML = lineChart(months);
+    }
+
+    function lineChart(series) {
+      if (!series.length) return '<div class="muted">No dated receipts yet.</div>';
+      const W = 320, H = 150, pL = 8, pR = 8, pT = 12, pB = 24;
+      const iw = W - pL - pR, ih = H - pT - pB, n = series.length;
+      const max = Math.max(...series.map(s => s.value)) || 1;
+      const x = i => n === 1 ? pL + iw / 2 : pL + iw * i / (n - 1);
+      const y = v => pT + ih * (1 - v / max);
+      const pts = series.map((s,i) => [x(i), y(s.value)]);
+      const line = 'M' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' L');
+      const base = (pT + ih).toFixed(1);
+      const area = line + ` L${pts[n-1][0].toFixed(1)},${base} L${pts[0][0].toFixed(1)},${base} Z`;
+      const dots = series.map((s,i) =>
+        `<circle cx="${x(i).toFixed(1)}" cy="${y(s.value).toFixed(1)}" r="4" class="dot"><title>${s.label}: ${money(s.value)}</title></circle>`).join('');
+      const labs = series.map((s,i) =>
+        `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${s.label}</text>`).join('');
+      return `<svg class="svgline" viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet"
+        role="img" aria-label="Spend over time by month">
+        <path class="area" d="${area}"/><path class="line" d="${line}"/>${dots}${labs}
+      </svg>`;
+    }
+
     async function run() {
       const text = $('in').value.trim();
       if (!text) return;
@@ -284,6 +394,13 @@ Points earned: 20`
         $('badge').innerHTML = data.valid
           ? '<span class="badge ok">valid JSON</span>'
           : '<span class="badge bad">invalid JSON</span>';
+        if (data.valid && data.receipt) {
+          const r = data.receipt;
+          receipts.push({ vendor:r.vendor, date:r.date, total:r.total, line_items:r.line_items });
+          render();
+          const dash = $('dashboard');
+          dash.classList.remove('flash'); void dash.offsetWidth; dash.classList.add('flash');
+        }
         $('status').textContent = '';
       } catch (e) {
         $('out').className = 'out muted';
@@ -298,6 +415,8 @@ Points earned: 20`
     $('in').addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') run();
     });
+
+    render();  // seed the dashboard on load
   </script>
 </body>
 </html>

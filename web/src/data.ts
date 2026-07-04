@@ -49,9 +49,9 @@ BALANCE DUE         $21.45`,
     key: "grocery",
     label: "Grocery",
     text: `GREENLEAF MARKET
-Store #14  ·  12/23/24
+Store #14    12/23/24
 ============================
-Bananas    2.1 lb @ $0.59   $1.24
+Bananas (bunch)      x1     $1.24
 Whole Milk 1gal      x2     $7.98
 Eggs Large Dozen            $4.49
 Sourdough                   $5.00

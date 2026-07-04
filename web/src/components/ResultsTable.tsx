@@ -9,7 +9,7 @@ const ROWS: { metric: string; base: string; ft: string; hi?: boolean }[] = [
 
 export default function ResultsTable() {
   return (
-    <section>
+    <section id="results">
       <h2>Does the fine-tune actually help?</h2>
       <div className="tablewrap">
         <table>
@@ -34,7 +34,7 @@ export default function ResultsTable() {
       <p className="caption">
         Both models are scored on the same 50 held-out receipts. The "base" is the identical 4-bit
         model with the LoRA adapters switched off, so it's apples-to-apples. The base already reads
-        vendor and total fine — but it can't know the receipt's <em>line-item convention</em>
+        vendor and total fine, but it can't know the receipt's <em>line-item convention</em>
         (quantity × unit-price vs. line totals), so its line-item F1 sits at 37% and it gets a fully
         correct record only 8% of the time. That gap is what fine-tuning buys.
       </p>

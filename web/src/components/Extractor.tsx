@@ -17,7 +17,7 @@ export default function Extractor({ onExtracted }: { onExtracted: (r: Receipt) =
     setStatus("working");
     setBadge(null);
     setOutMuted(true);
-    setOutput("Working… a live run on the free CPU Space takes ~2–3 minutes.");
+    setOutput("Working... a live run on the free CPU Space takes about 2-3 minutes.");
     try {
       const data = await extract(trimmed);
       setOutMuted(false);
@@ -33,7 +33,7 @@ export default function Extractor({ onExtracted }: { onExtracted: (r: Receipt) =
   }
 
   return (
-    <section>
+    <section id="try">
       <h2>Try it live</h2>
       <div className="samples">
         <span className="muted">Load a sample:</span>
@@ -69,16 +69,16 @@ export default function Extractor({ onExtracted }: { onExtracted: (r: Receipt) =
 
       <div className="row">
         <button onClick={run} disabled={status === "working"}>
-          {status === "working" ? "Extracting…" : "Extract"}
+          {status === "working" ? "Extracting..." : "Extract"}
         </button>
-        {status === "working" && <span className="muted">Extracting…</span>}
+        {status === "working" && <span className="muted">Extracting...</span>}
       </div>
 
       <p className="note">
         Heads up: this is a 7B model served on a <b>free CPU</b> Space, so a live extraction takes{" "}
-        <b>~2–3 minutes</b> — a hosting choice, not a model limit (on a GPU it's seconds). That's why
-        the dashboard below is precomputed; a live run here appends to it.{" "}
-        <kbd>Ctrl/⌘ + Enter</kbd> also runs it.
+        <b>about 2-3 minutes</b>, a hosting choice rather than a model limit (on a GPU it's seconds).
+        That's why the dashboard below is precomputed, and a live run here appends to it.{" "}
+        <kbd>Ctrl / Cmd + Enter</kbd> also runs it.
       </p>
     </section>
   );

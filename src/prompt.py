@@ -2,7 +2,7 @@
 
 Fine-tuning only works if the model sees the same prompt at inference that it saw
 during training. Rather than hand-roll a format string, we define the conversation
-as messages and let Qwen's official chat template render it — the training notebook
+as messages and let Qwen's official chat template render it; the training notebook
 applies it via `tokenizer.apply_chat_template`, and the serving app applies the same
 template through llama.cpp's chat completion. Both sides derive from this one place,
 so they cannot drift.
@@ -26,7 +26,7 @@ INSTRUCTION = (
 
 
 def build_messages(receipt_text: str) -> list[dict]:
-    """The chat conversation for one receipt (no answer) — the single source of truth."""
+    """The chat conversation for one receipt (no answer): the single source of truth."""
     return [
         {"role": "system", "content": SYSTEM},
         {"role": "user", "content": f"{INSTRUCTION}\n\n{receipt_text.strip()}"},

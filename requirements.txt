@@ -4,12 +4,12 @@ fastapi>=0.110
 uvicorn[standard]>=0.29
 huggingface_hub>=0.23
 # llama-cpp-python is installed in the Dockerfile from the prebuilt CPU wheel
-# index (no source build) — see Dockerfile.
+# index (no source build); see Dockerfile.
 
 # Evaluation harness.
 tqdm>=4.66
 
 # Note: training dependencies (torch, transformers, peft, bitsandbytes, trl,
-# datasets) are NOT listed here — training runs on Colab/Kaggle where those are
+# datasets) are NOT listed here; training runs on Colab/Kaggle where those are
 # preinstalled or installed in the notebook. Keeping them out of this file keeps
 # the serving image small and CPU-only.

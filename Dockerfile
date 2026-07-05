@@ -9,7 +9,7 @@ ENV HOME=/home/user \
 
 WORKDIR /app
 
-# Install llama-cpp-python from the prebuilt CPU wheel index — no source build,
+# Install llama-cpp-python from the prebuilt CPU wheel index (no source build),
 # so the free Spaces builder never has to compile llama.cpp (which OOMs it).
 # --only-binary guarantees pip uses the wheel instead of falling back to source.
 RUN pip install --no-cache-dir \

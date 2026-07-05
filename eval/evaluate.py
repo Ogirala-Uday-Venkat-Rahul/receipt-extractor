@@ -6,13 +6,13 @@ know it got better?" These metrics answer that, and the same code scores the
 base model and the fine-tuned model so the comparison is apples-to-apples.
 
 Metrics reported:
-  json_valid   — fraction of outputs that parse into the schema at all. The base
+  json_valid   : fraction of outputs that parse into the schema at all. The base
                  model often wraps JSON in prose or emits trailing commas; this
                  catches that. A model that can't produce valid JSON is useless
                  downstream regardless of field accuracy.
-  exact_match  — fraction where the whole record equals the gold record.
-  vendor/date/total accuracy — per-field correctness (only over parseable rows).
-  line_item_f1 — precision/recall/F1 over (description, quantity, price) tuples,
+  exact_match  : fraction where the whole record equals the gold record.
+  vendor/date/total accuracy: per-field correctness (only over parseable rows).
+  line_item_f1 : precision/recall/F1 over (description, quantity, price) tuples,
                  because a receipt with the right total but wrong items is wrong.
 
 Use from a notebook:

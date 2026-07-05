@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Receipt Extractor — fine-tuned LLM for structured extraction</title>
+  <title>Receipt Extractor: fine-tuned LLM for structured extraction</title>
   <style>
     :root {
       --bg:#0d0f14; --panel:#161922; --panel2:#1c2029; --line:#272b35;
@@ -103,14 +103,14 @@
     .chartcard { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; }
     .chartcard h3 { margin:0 0 16px; font-size:13px; color:var(--mut); font-weight:600;
                     text-transform:uppercase; letter-spacing:.04em; }
-    /* horizontal bars (spend by vendor) — one hue, rounded ends, direct labels */
+    /* horizontal bars (spend by vendor): one hue, rounded ends, direct labels */
     .brow { display:grid; grid-template-columns:92px 1fr 60px; align-items:center; gap:12px; margin:0 0 11px; }
     .brow:last-child { margin-bottom:0; }
     .blabel { font-size:12.5px; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .btrack { height:14px; background:var(--panel2); border-radius:999px; overflow:hidden; }
     .bfill { height:100%; background:var(--acc); border-radius:999px; min-width:3px; transition:width .5s ease; }
     .bval { font-size:12.5px; color:var(--ink); text-align:right; font-variant-numeric:tabular-nums; }
-    /* line/area (spend over time) — single series, 2px line, ringed markers */
+    /* line/area (spend over time): single series, 2px line, ringed markers */
     .svgline .area { fill:rgba(91,140,255,.14); }
     .svgline .line { fill:none; stroke:var(--acc); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
     .svgline .dot { fill:var(--acc2); stroke:var(--panel); stroke-width:2; }
@@ -126,7 +126,7 @@
       <span class="eyebrow">🧾 Fine-tuned · Qwen2.5-7B · QLoRA</span>
       <h1>Messy receipts in,<br><span class="g">structured JSON</span> out.</h1>
       <p class="lede">A 7-billion-parameter model fine-tuned to pull the vendor, date, total,
-        and line items out of noisy real-world receipt text — with an evaluation that measures
+        and line items out of noisy real-world receipt text, with an evaluation that measures
         exactly how much the fine-tune beats the base model.</p>
       <div class="meta">
         <span class="pill">4-bit QLoRA</span>
@@ -159,27 +159,27 @@
         <span id="status" class="muted"></span>
       </div>
       <p class="note">Heads up: this is a 7B model served on a <b>free CPU</b> Space, so a live extraction
-        takes <b>~2–3 minutes</b> — a hosting choice, not a model limit (on a GPU it's seconds). That's why the
-        dashboard below is precomputed; a live run here appends to it. <kbd>Ctrl/⌘ + Enter</kbd> also runs it.</p>
+        takes <b>about 2-3 minutes</b>, a hosting choice rather than a model limit (on a GPU it's seconds). That's why the
+        dashboard below is precomputed; a live run here appends to it. <kbd>Ctrl / Cmd + Enter</kbd> also runs it.</p>
     </section>
 
     <section id="dashboard">
-      <h2>The point isn't JSON — it's the decision on top of it</h2>
+      <h2>From clean JSON to a spend decision</h2>
       <p class="caption" style="margin:0 0 22px;">Extraction is the <em>ingestion</em> step, not the product. A BI tool can
-        chart a clean table — but it can't read a crumpled receipt, and that's the hard part the fine-tuned model does.
+        chart a clean table, but it can't read a crumpled receipt, and that's the hard part the fine-tuned model does.
         Here the model's structured output is rolled up into a live spend view. It's pre-loaded with receipts the model
         already processed; <b>extract one above and it lands here too.</b></p>
       <div class="kpis">
-        <div class="kpi"><div class="kpi-v" id="k-total">—</div><div class="kpi-l">Total spend</div></div>
-        <div class="kpi"><div class="kpi-v" id="k-count">—</div><div class="kpi-l">Receipts</div></div>
-        <div class="kpi"><div class="kpi-v" id="k-avg">—</div><div class="kpi-l">Avg receipt</div></div>
-        <div class="kpi"><div class="kpi-v" id="k-items">—</div><div class="kpi-l">Line items</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-total">-</div><div class="kpi-l">Total spend</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-count">-</div><div class="kpi-l">Receipts</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-avg">-</div><div class="kpi-l">Avg receipt</div></div>
+        <div class="kpi"><div class="kpi-v" id="k-items">-</div><div class="kpi-l">Line items</div></div>
       </div>
       <div class="charts">
         <div class="chartcard"><h3>Spend by vendor</h3><div id="chart-vendor" class="svgbar"></div></div>
         <div class="chartcard"><h3>Spend over time</h3><div id="chart-time"></div></div>
       </div>
-      <p class="note">Deliberately a small view — the engineering that matters is <em>upstream</em>, turning messy text
+      <p class="note">Deliberately a small view. The engineering that matters is <em>upstream</em>, turning messy text
         into this clean data. In production you'd pipe the same JSON into your warehouse or BI tool of choice.</p>
     </section>
 
@@ -202,8 +202,8 @@
       </div>
       <p class="caption">Both models are scored on the same 50 held-out receipts. The "base" is the
         identical 4-bit model with the LoRA adapters switched off, so it's apples-to-apples. The base
-        already reads vendor and total fine — but it can't know the receipt's <em>line-item convention</em>
-        (quantity × unit-price vs. line totals), so its line-item F1 sits at 37% and it gets a fully
+        already reads vendor and total fine, but it can't know the receipt's <em>line-item convention</em>
+        (quantity-times-unit-price vs. line totals), so its line-item F1 sits at 37% and it gets a fully
         correct record only 8% of the time. That gap is what fine-tuning buys.</p>
     </section>
 
@@ -214,7 +214,7 @@
           <h3>The business case</h3>
           <p>High-volume document processing where cost and privacy matter. A company scanning
             thousands of receipts a day doesn't want to pay a frontier API per call or ship its
-            data off-site — it wants a small model it owns that has learned one job well.</p>
+            data off-site. It wants a small model it owns that has learned one job well.</p>
         </div>
         <div class="card">
           <h3>The learnable rules</h3>
@@ -231,25 +231,25 @@
       <div class="cards">
         <div class="card">
           <h3>Pipeline</h3>
-          <div class="flow"><b>synthetic data</b> — build a structured record, then render it down
+          <div class="flow"><b>synthetic data:</b> build a structured record, then render it down
 into noisy receipt text, so the ground-truth JSON is correct <b>by construction</b>
         ↓
-<b>QLoRA fine-tune</b> — 7B base kept in 4-bit, low-rank adapters
+<b>QLoRA fine-tune:</b> 7B base kept in 4-bit, low-rank adapters
 trained on a free T4 GPU
         ↓
-<b>evaluate</b> base vs. fine-tuned — validity, per-field
+<b>evaluate</b> base vs. fine-tuned: validity, per-field
 accuracy, line-item F1
         ↓
 <b>merge + quantize → GGUF (Q4_K_M)</b>
         ↓
-<b>serve on CPU</b> — FastAPI, downloads the model from the Hub</div>
+<b>serve on CPU:</b> FastAPI, downloads the model from the Hub</div>
         </div>
         <div class="card">
           <h3>Honest caveats</h3>
           <ul class="disc" style="margin:0; padding-left:18px;">
-            <li>The dataset is <b>synthetic</b> — it models the kinds of noise real receipts have,
+            <li>The dataset is <b>synthetic</b>. It models the kinds of noise real receipts have,
               not scanned OCR. The methodology transfers directly to a real annotated set.</li>
-            <li><b>CPU serving is slower</b> than a GPU API — a few seconds per receipt. The
+            <li><b>CPU serving is slow:</b> about 2-3 minutes per receipt on a free CPU Space. The
               architecture doesn't change with better hardware; the latency does.</li>
             <li>The point is the <b>measured gap over the base model</b>, not that it's a 7B.</li>
           </ul>
@@ -330,7 +330,7 @@ Points earned: 20`
       $('k-avg').textContent   = rs.length ? money(total / rs.length) : '$0.00';
       $('k-items').textContent = items;
 
-      // spend by vendor — magnitude across identities → one-hue horizontal bars
+      // spend by vendor: magnitude across identities -> one-hue horizontal bars
       const byV = {};
       rs.forEach(r => { const k = r.vendor || 'Unknown'; byV[k] = (byV[k] || 0) + r.total; });
       const vendors = Object.entries(byV).sort((a,b) => b[1] - a[1]).slice(0, 8);
@@ -342,7 +342,7 @@ Points earned: 20`
           <div class="bval">${money(val)}</div>
         </div>`).join('');
 
-      // spend over time — trend → single-series line+area, aggregated by month
+      // spend over time: trend -> single-series line+area, aggregated by month
       const byM = {};
       rs.forEach(r => { const m = (r.date || '').slice(0,7);
         if (/^\d{4}-\d{2}$/.test(m)) byM[m] = (byM[m] || 0) + r.total; });
@@ -375,10 +375,10 @@ Points earned: 20`
       const text = $('in').value.trim();
       if (!text) return;
       $('go').disabled = true;
-      $('status').textContent = 'Extracting…';
+      $('status').textContent = 'Extracting...';
       $('badge').innerHTML = '';
       $('out').className = 'out muted';
-      $('out').textContent = 'Working… (first request can take a minute on a cold Space)';
+      $('out').textContent = 'Working... (first request can take a minute on a cold Space)';
       try {
         const res = await fetch('/extract', {
           method: 'POST',

@@ -88,7 +88,7 @@ def _render(receipt: Receipt, rng: random.Random) -> str:
     symbol = rng.random() < 0.8
     lines: list[str] = []
 
-    # Header block — vendor plus junk the model must learn to skip.
+    # Header block: vendor plus junk the model must learn to skip.
     lines.append(receipt.vendor.upper() if rng.random() < 0.5 else receipt.vendor)
     if rng.random() < 0.7:
         lines.append(rng.choice(ADDRESSES))
@@ -106,7 +106,7 @@ def _render(receipt: Receipt, rng: random.Random) -> str:
     lines.extend(meta)
     lines.append("-" * rng.randint(20, 32))
 
-    # Line items — layout of quantity vs description varies row to row.
+    # Line items: layout of quantity vs description varies row to row.
     for item in receipt.line_items:
         line_total = _money(item.price * item.quantity, symbol)
         layout = rng.randint(0, 2)

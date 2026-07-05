@@ -37,7 +37,7 @@ class Receipt(BaseModel):
         return round(v, 2)
 
     def to_json(self) -> str:
-        """Compact, key-ordered JSON — the exact string the model is trained to emit."""
+        """Compact, key-ordered JSON: the exact string the model is trained to emit."""
         return json.dumps(
             {
                 "vendor": self.vendor,

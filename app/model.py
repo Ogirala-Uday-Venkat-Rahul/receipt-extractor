@@ -18,7 +18,7 @@ from src.prompt import build_messages
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/receipt-extractor-q4.gguf")
 THREADS = int(os.getenv("LLAMA_THREADS", "4"))
-# A ~4 GB GGUF is too big to commit. Push it to an HF model repo and set these two
+# A 4 GB GGUF is too big to commit. Push it to an HF model repo and set these two
 # env vars; the app downloads it once on first request (cached on disk thereafter).
 MODEL_REPO = os.getenv("MODEL_REPO")            # e.g. "ouvrahul/receipt-extractor-gguf"
 MODEL_FILE = os.getenv("MODEL_FILE", "receipt-extractor-q4.gguf")

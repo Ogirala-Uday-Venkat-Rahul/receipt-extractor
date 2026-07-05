@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frontend for the fine-tuned receipt extractor — calls the model API and rolls results into a spend view.",
+  "description": "Frontend for the fine-tuned receipt extractor that calls the model API and rolls results into a spend view.",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -1,4 +1,4 @@
-# Receipt Extractor — web frontend
+# Receipt Extractor: web frontend
 
 The standalone frontend for the fine-tuned receipt extractor. It's a Vite + React +
 TypeScript single-page app that calls the model API (`POST /extract`) and rolls the
@@ -19,7 +19,7 @@ at `http://localhost:7860` to develop against a locally-served model instead.
 
 ## Deploy (Vercel)
 
-The app is static — any static host works; these steps are for Vercel.
+The app is static, so any static host works; these steps are for Vercel.
 
 ```bash
 npm i -g vercel      # once
@@ -36,7 +36,7 @@ Netlify is identical: build `npm run build`, publish `dist`, same env var.
 ## Notes
 
 - The dashboard seeds with receipts the model already extracted, so the page is
-  populated instantly. A live extraction appends to it — the run itself takes ~2–3
-  minutes because the model is a 7B served on a free CPU Space.
+  populated instantly. A live extraction appends to it; the run itself takes about
+  2-3 minutes because the model is a 7B served on a free CPU Space.
 - Cross-origin calls work because the API sends permissive CORS headers (it's a
   public, read-only demo endpoint with no auth).

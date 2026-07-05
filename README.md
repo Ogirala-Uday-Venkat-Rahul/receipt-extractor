@@ -43,6 +43,14 @@ thousands of receipts a day doesn't want to send each one to a paid API and pay
 per call. It wants a model it owns, running on its own hardware, that has learned
 one job well. This project builds exactly that and measures whether it works.
 
+Bulk is the whole point, and it's a loop around the model, not a separate feature:
+one receipt in, one JSON out via `POST /extract`, called once per document. The
+evaluation already does this at scale, scoring the model over the full held-out set
+programmatically. The live demo extracts one receipt at a time only because the free
+CPU host is slow (a couple of minutes each); a real deployment fans the same endpoint
+across a folder or queue on a GPU (about a second each) and streams the JSON onward.
+The manual paste box is a demo affordance, not the product.
+
 The interesting problems live in the *noise*: dates written five different ways
 that all have to normalise to `YYYY-MM-DD`, the total hiding behind "AMOUNT DUE"
 or "BALANCE", junk lines (addresses, tax, loyalty points) that must be ignored,

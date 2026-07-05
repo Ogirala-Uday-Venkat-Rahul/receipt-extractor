@@ -43,7 +43,7 @@ code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.92em; color
               box-shadow:0 0 12px rgba(139,164,255,.9); }
 .nav-links { display:flex; align-items:center; gap:6px; }
 .nav-links a { color:var(--mut); font-size:13.5px; padding:7px 12px; border-radius:8px;
-               transition:.15s; }
+               transition:.15s; white-space:nowrap; }
 .nav-links a:hover { color:var(--ink); background:var(--panel2); text-decoration:none; }
 .nav-links a.cta { color:var(--ink); border:1px solid var(--line2);
                    background:linear-gradient(180deg,var(--panel2),var(--panel)); }

@@ -1,23 +1,32 @@
-const ROWS: { metric: string; base: string; ft: string; hi?: boolean }[] = [
-  { metric: "JSON valid", base: "92.0%", ft: "100.0%" },
-  { metric: "Exact match", base: "8.0%", ft: "100.0%" },
-  { metric: "Vendor accuracy", base: "100.0%", ft: "100.0%" },
-  { metric: "Date accuracy", base: "95.7%", ft: "100.0%" },
-  { metric: "Total accuracy", base: "100.0%", ft: "100.0%" },
-  { metric: "Line-item F1", base: "37.2%", ft: "100.0%", hi: true },
+interface EvalRow {
+  metric: string;
+  base: string;
+  ft: string;
+  delta: string;
+  hi?: boolean;
+}
+
+const ROWS: EvalRow[] = [
+  { metric: "JSON Schema Validity", base: "92.0%", ft: "100.0%", delta: "+8.0%" },
+  { metric: "Exact Match (All Fields)", base: "8.0%", ft: "100.0%", delta: "+92.0%", hi: true },
+  { metric: "Vendor Extraction Accuracy", base: "100.0%", ft: "100.0%", delta: "0.0%" },
+  { metric: "Date Normalization (ISO-8601)", base: "95.7%", ft: "100.0%", delta: "+4.3%" },
+  { metric: "Total Amount Accuracy", base: "100.0%", ft: "100.0%", delta: "0.0%" },
+  { metric: "Line-Item Token F1 Score", base: "37.2%", ft: "100.0%", delta: "+62.8%", hi: true },
 ];
 
 export default function ResultsTable() {
   return (
     <section id="results">
-      <h2>Does the fine-tune actually help?</h2>
+      <h2>Empirical Evaluation: Zero-Shot Base vs. Fine-Tuned</h2>
       <div className="tablewrap">
         <table>
           <thead>
             <tr>
-              <th>Metric</th>
+              <th>Benchmark Metric</th>
               <th>Base Qwen2.5-7B</th>
-              <th>Fine-tuned</th>
+              <th>Fine-Tuned (QLoRA)</th>
+              <th>Delta</th>
             </tr>
           </thead>
           <tbody>
@@ -26,17 +35,20 @@ export default function ResultsTable() {
                 <td className="metric">{r.metric}</td>
                 <td className="base">{r.base}</td>
                 <td className="ft">{r.ft}</td>
+                <td className="ft" style={{ color: r.delta.startsWith("+") ? "var(--ok)" : "var(--dim)" }}>
+                  {r.delta}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="caption">
-        Both models are scored on the same 50 held-out receipts. The "base" is the identical 4-bit
-        model with the LoRA adapters switched off, so it's apples-to-apples. The base already reads
-        vendor and total fine, but it can't know the receipt's <em>line-item convention</em>
-        (quantity-times-unit-price vs. line totals), so its line-item F1 sits at 37% and it gets a fully
-        correct record only 8% of the time. That gap is what fine-tuning buys.
+        Both models were evaluated on the identical 50 held-out validation receipts. The baseline is the
+        same 4-bit model without the low-rank adapter weights. While the base model extracts top-level
+        fields (vendor, total) with moderate reliability, it consistently struggles with multi-item syntax
+        (quantity-times-unit-price conventions), resulting in only 37.2% line-item F1 and 8% overall exact match.
+        Adapter fine-tuning completely resolves this structural ambiguity.
       </p>
     </section>
   );

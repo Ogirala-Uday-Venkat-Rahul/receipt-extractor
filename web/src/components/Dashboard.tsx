@@ -65,12 +65,11 @@ export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]
 
   return (
     <section id="dashboard" ref={ref}>
-      <h2>From clean JSON to a spend decision</h2>
+      <h2>Downstream Ingestion & Telemetry</h2>
       <p className="caption" style={{ margin: "0 0 18px" }}>
-        Extraction is the <em>ingestion</em> step, not the product. A BI tool can chart a clean
-        table, but it can't read a crumpled receipt, and that's the hard part the fine-tuned model
-        does. This is a <b>batch of receipts the model already processed</b>, rolled up into a spend
-        view. Anything you extract above joins it as its own session.
+        Extraction is the <em>ingestion phase</em> of the document lifecycle. BI dashboards and data
+        warehouses require deterministic schemas to compute analytics. Below is a sample batch processed
+        by the fine-tuned model; live extractions from above dynamically append to this dataset.
       </p>
 
       {sessionCount > 0 && (

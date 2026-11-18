@@ -15,6 +15,7 @@ import os
 from functools import lru_cache
 
 from src.prompt import build_messages
+from src.schema import Receipt
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/receipt-extractor-q4.gguf")
 THREADS = int(os.getenv("LLAMA_THREADS", "4"))
@@ -57,8 +58,14 @@ def extract(receipt_text: str) -> str:
     llm = _load()
     # create_chat_completion applies the ChatML template, so the served prompt matches
     # the training prompt built by tokenizer.apply_chat_template in the notebook.
+    # response_format converts Receipt's schema into a GBNF grammar in llama.cpp,
+    # ensuring the token sampler only emits valid schema tokens.
     out = llm.create_chat_completion(
         messages=build_messages(receipt_text),
+        response_format={
+            "type": "json_object",
+            "schema": Receipt.model_json_schema(),
+        },
         max_tokens=512,
         temperature=0.0,
     )

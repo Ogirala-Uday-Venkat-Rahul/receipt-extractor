@@ -5,16 +5,10 @@ import LineChart from "./LineChart";
 
 type View = "all" | "sample" | "session";
 
-// Roll the extracted receipts up into a small spend view. Extraction is the
-// ingestion step; this is the decision layer that makes the JSON worth having.
-// receipts = the seeded sample batch followed by anything extracted this session;
-// seedCount marks the boundary so a user can look at just their own scans.
 export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]; seedCount: number }) {
   const sessionCount = Math.max(0, receipts.length - seedCount);
   const [view, setView] = useState<View>("all");
 
-  // The first time a live extraction lands, jump to the session view so the user
-  // sees just what they scanned instead of hunting for it among the sample batch.
   const prevSession = useRef(sessionCount);
   useEffect(() => {
     if (sessionCount > prevSession.current) setView("session");
@@ -29,7 +23,7 @@ export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]
   const total = rs.reduce((s, r) => s + r.total, 0);
   const items = rs.reduce((s, r) => s + (r.line_items?.length || 0), 0);
 
-  // spend by vendor: magnitude across identities -> one-hue horizontal bars
+  // Spend by vendor
   const byVendor: Record<string, number> = {};
   rs.forEach((r) => {
     const k = r.vendor || "Unknown";
@@ -38,7 +32,7 @@ export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]
   const vendors = Object.entries(byVendor).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const vmax = Math.max(...vendors.map((v) => v[1]), 1);
 
-  // spend over time: trend -> single-series line, aggregated by month
+  // Spend over time
   const byMonth: Record<string, number> = {};
   rs.forEach((r) => {
     const m = (r.date || "").slice(0, 7);
@@ -48,7 +42,6 @@ export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]
     .sort()
     .map((m) => ({ label: MONTHS[+m.slice(5, 7) - 1], value: byMonth[m] }));
 
-  // Flash the section when a new receipt lands, so a live extraction is visible.
   const ref = useRef<HTMLElement>(null);
   const first = useRef(true);
   useEffect(() => {
@@ -59,13 +52,68 @@ export default function Dashboard({ receipts, seedCount }: { receipts: Receipt[]
     const el = ref.current;
     if (!el) return;
     el.classList.remove("flash");
-    void el.offsetWidth; // reflow so the animation can restart
+    void el.offsetWidth;
     el.classList.add("flash");
   }, [receipts.length]);
 
+  function exportCSV() {
+    let csv = "Vendor,Date,Description,Quantity,Price,Total\n";
+    rs.forEach((r) => {
+      if (r.line_items && r.line_items.length) {
+        r.line_items.forEach((it) => {
+          csv += `"${r.vendor}","${r.date}","${it.description}",${it.quantity},${it.price},${r.total}\n`;
+        });
+      } else {
+        csv += `"${r.vendor}","${r.date}","Total",1,${r.total},${r.total}\n`;
+      }
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `receipt_spend_${view}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportQuickBooks() {
+    const payload = JSON.stringify({
+      format: "quickbooks_expense_v1",
+      exported_at: new Date().toISOString(),
+      view,
+      records: scoped,
+    }, null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `quickbooks_expenses_${view}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <section id="dashboard" ref={ref}>
-      <h2>Downstream Ingestion & Telemetry</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "12px" }}>
+        <h2 style={{ margin: 0 }}>Downstream Ingestion & Telemetry</h2>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            type="button"
+            onClick={exportCSV}
+            style={{ padding: "6px 12px", fontSize: "12px", background: "var(--panel)", border: "1px solid var(--line2)", color: "var(--ink)" }}
+          >
+            Export CSV
+          </button>
+          <button
+            type="button"
+            onClick={exportQuickBooks}
+            style={{ padding: "6px 12px", fontSize: "12px", background: "var(--panel)", border: "1px solid var(--line2)", color: "var(--ink)" }}
+          >
+            Export QuickBooks
+          </button>
+        </div>
+      </div>
+
       <p className="caption" style={{ margin: "0 0 18px" }}>
         Extraction is the <em>ingestion phase</em> of the document lifecycle. BI dashboards and data
         warehouses require deterministic schemas to compute analytics. Below is a sample batch processed

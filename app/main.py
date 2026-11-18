@@ -60,6 +60,8 @@ def root() -> FileResponse:
 def extract_receipt(req: ExtractRequest) -> ExtractResponse:
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="text is required")
+    if len(req.text) > 10_000:
+        raise HTTPException(status_code=400, detail="Input text exceeds maximum allowed size (10,000 characters)")
     try:
         raw = extract(req.text)
     except FileNotFoundError as exc:

@@ -348,6 +348,26 @@ button:hover {
 button:active { background: #7c2d12; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Drop Zone for OCR Image Ingestion */
+.drop-zone {
+  border: 2px dashed var(--line2);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+  margin-bottom: 18px;
+}
+.drop-zone:hover {
+  border-color: var(--acc);
+  background: rgba(194, 65, 12, 0.02);
+}
+.drop-zone.dragover {
+  border-color: var(--acc);
+  background: rgba(194, 65, 12, 0.06);
+}
+
 .samples { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; }
 .chip {
   background: var(--panel);

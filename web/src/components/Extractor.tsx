@@ -28,14 +28,27 @@ export default function Extractor({ onExtracted }: { onExtracted: (r: Receipt) =
     checkHealth().then(setHealth);
   }, []);
 
+  const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB limit to prevent browser memory exhaustion
+
   async function handleImageFile(file: File) {
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload a receipt image (PNG, JPG, JPEG, WEBP)");
+    // 1. Strict MIME type validation (blocks executable files, SVGs with embedded scripts, HTML)
+    if (!ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+      setOcrStatus("idle");
+      setOcrMessage("Security restriction: Only standard image files (PNG, JPG, WEBP) are accepted. SVG and executable formats are rejected.");
       return;
     }
+
+    // 2. Strict file size cap (prevents client-side DoS / tab crash)
+    if (file.size > MAX_FILE_SIZE) {
+      setOcrStatus("idle");
+      setOcrMessage(`File is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum allowed size is 10 MB.`);
+      return;
+    }
+
     setImageName(file.name);
     setOcrStatus("processing");
-    setOcrMessage("Initializing client-side OCR engine...");
+    setOcrMessage("Initializing local client-side OCR engine (WebAssembly)...");
     setOcrProgress(0.1);
 
     try {
@@ -47,12 +60,20 @@ export default function Extractor({ onExtracted }: { onExtracted: (r: Receipt) =
           }
         },
       });
-      const recognized = res.data.text.trim();
+
+      // 3. Output sanitization & buffer cap (prevents prompt injection tokens & context overflow)
+      let recognized = res.data.text.trim();
+      // Remove non-printable control characters
+      recognized = recognized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+      if (recognized.length > 8000) {
+        recognized = recognized.slice(0, 8000);
+      }
+
       if (recognized) {
         setText(recognized);
         setOcrMessage("Receipt text successfully extracted into input buffer");
       } else {
-        setOcrMessage("No readable text detected. Please paste text directly or adjust lighting.");
+        setOcrMessage("No readable text detected. Please ensure the receipt photo is sharp and legible.");
       }
     } catch (err: any) {
       setOcrMessage(`OCR recognition failed: ${err.message || err}`);
